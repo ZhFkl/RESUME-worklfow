@@ -1,0 +1,81 @@
+% resume-en-template.tex — English single-page resume template (example persona: Alex Zhang)
+% US-letter, classic layout: centered name, small-caps section headers with rules, right-aligned dates. No photo.
+% Usage: copy to resume-<company>.tex, replace content, do not touch the style macros.
+% Compile: xelatex resume-en-template.tex (twice)
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage[letterpaper,margin=0.55in]{geometry}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\raggedbottom
+
+% Section header: small-caps title with full-width rule beneath
+\newcommand{\resumesection}[1]{%
+  \vspace{4pt}%
+  {\large\scshape\textbf{#1}}%
+  \vspace{1pt}\hrule height 0.6pt\vspace{4pt}%
+}
+
+% Entry heading: bold title left, date right; italic subtitle line
+\newcommand{\entryheading}[4]{%
+  \textbf{#1}\hfill #2\\[1pt]
+  \textit{#3}\hfill \textit{#4}\vspace{2pt}%
+}
+
+% Tight bullet list
+\newenvironment{entrybullets}{%
+  \begin{itemize}[leftmargin=1.4em,itemsep=1pt,topsep=1pt,parsep=0pt]%
+}{\end{itemize}\vspace{3pt}}
+
+\begin{document}
+
+%---------- HEADING ----------
+\begin{center}
+  {\LARGE \textbf{Alex Zhang}}\\[3pt]
+  \href{mailto:zhangming@example.com}{zhangming@example.com} \ $|$\  +86 138-0000-0000 \ $|$\  \href{https://github.com/yourname}{github.com/yourname}\\[2pt]
+  \small <City, Country (UTC+X)> \ $|$\  <Availability, e.g. Available for remote internship, 4+ days/week>
+\end{center}
+
+%---------- EDUCATION ----------
+\resumesection{Education}
+\entryheading{<University Name>}{<City, Country>}{B.Eng. in Computer Science \ $|$\  GPA: <X.X>}{<Sep 20XX -- Jun 20XX>}
+
+%---------- TECHNICAL SKILLS ----------
+\resumesection{Technical Skills}
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt,topsep=0pt,parsep=0pt]
+  \item \textbf{Languages:} <e.g. C/C++, Go, Python>
+  \item \textbf{Systems \& Tools:} <e.g. Linux, Git, CMake, Docker>
+  \item \textbf{<Domain skills line, tailored to the JD>:} <e.g. Distributed Systems: Raft consensus, MapReduce, fault-tolerant KV storage>
+\end{itemize}
+\vspace{3pt}
+
+%---------- EXPERIENCE ----------
+\resumesection{Experience}
+
+\entryheading{<Company Name>}{<City / Remote>}{<Role, e.g. Backend Engineering Intern>}{<Mon 20XX -- Mon 20XX>}
+\begin{entrybullets}
+  \item <What you built + how + quantified result, e.g. Developed and optimized order-service APIs; cached hot data in Redis, cutting P99 latency from 800ms to 120ms.>
+  \item <Second bullet>
+\end{entrybullets}
+
+%---------- PROJECTS ----------
+\resumesection{Projects}
+
+\entryheading{<Project 1 Name>}{<Mon 20XX -- Mon 20XX>}{<Tech stack line, e.g. C++17, multithreading, LRU, consistent hashing>}{}
+\begin{entrybullets}
+  \item <Core design + quantified result>
+  \item <Second bullet>
+  \item <Third bullet>
+\end{entrybullets}
+
+\entryheading{<Project 2 Name>}{<Mon 20XX -- Mon 20XX>}{<Tech stack line>}{}
+\begin{entrybullets}
+  \item <Core design + quantified result>
+  \item <Second bullet>
+\end{entrybullets}
+
+\end{document}

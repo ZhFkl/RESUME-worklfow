@@ -1,0 +1,137 @@
+% !TEX program = xelatex
+% resume-中文模板.tex — 中文单页简历模板（示例人物：张明）
+% 用法：复制本文件另存为 resume-<目标公司>.tex，替换内容，不要改动样式宏
+% 编译：xelatex resume-中文模板.tex（连续编译两次）
+% 依赖：ctex + fandol 中文字体、fontawesome5、tex-gyre（Overleaf 自带）
+% 证件照：photo.jpg 放同目录；无照片时自动降级为无边框占位，不影响编译
+
+\documentclass[UTF8, a4paper, fontset=fandol]{ctexart}
+
+\usepackage[top=1.2cm, bottom=1.1cm, left=1.3cm, right=1.3cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{fontawesome5}
+\usepackage[hidelinks]{hyperref}
+
+% 西文使用 Times 风格字体（按文件名加载，不依赖系统 fontconfig）
+\setmainfont{texgyretermes-regular.otf}[
+  BoldFont = texgyretermes-bold.otf,
+  ItalicFont = texgyretermes-italic.otf,
+  BoldItalicFont = texgyretermes-bolditalic.otf]
+
+% 页眉主题色（深红；可改为自己喜欢的颜色）
+\definecolor{hdred}{RGB}{139, 0, 0}
+
+% 仿斜体中文字体族：用于"核心技术"行和右侧日期
+\setCJKfamilyfont{songsl}{FandolSong-Regular.otf}[
+  BoldFont = FandolSong-Bold.otf,
+  FakeSlant = 0.2]
+
+% 加粗+倾斜（中文伪斜体，西文真斜体）
+\newcommand{\dsl}[1]{{\CJKfamily{songsl}\bfseries\itshape #1}}
+
+% 全局行距（超出一页时优先压缩内容，再微调此值，如 1.05）
+\linespread{1.08}
+
+% 章节标题：大号加粗 + 通栏横线
+\newcommand{\resumesection}[1]{%
+  \par\vspace{2pt}%
+  \noindent{\Large\bfseries #1}\par
+  \vspace{0pt}%
+  \noindent\rule{\textwidth}{0.9pt}\par
+  \vspace{-4pt}%
+}
+
+% 条目行：左侧加粗标题，右侧加粗斜体日期
+\newcommand{\entry}[2]{\par\noindent\textbf{#1}\hfill\dsl{#2}\par}
+
+% 核心技术行：缩进 + 加粗斜体
+\newcommand{\techline}[1]{\par\noindent\hspace{1em}\dsl{核心技术：#1}\par}
+
+% 列表样式：小圆点、紧凑间距
+\setlist[itemize]{
+  leftmargin = 1.6em,
+  itemsep = 0pt,
+  parsep = 0pt,
+  topsep = 1pt,
+  label = {\small\textbullet}
+}
+
+\pagestyle{empty}
+
+\begin{document}
+
+% ===================== 页眉：姓名 + 联系方式 + 证件照 =====================
+\noindent
+\begin{minipage}[t]{0.78\textwidth}
+  \vspace{0pt}
+  {\color{hdred}\large 姓名：张明}\par
+  \vspace{3pt}
+  {\color{hdred}\faPhone\ +86 138-0000-0000\ \textbar\ \faEnvelope\
+   \href{mailto:zhangming@example.com}{zhangming@example.com}\ \textbar\ \faGithub\
+   \href{https://github.com/yourname}{github.com/yourname}}\par
+  \vspace{3pt}
+  {\color{hdred}\faBriefcase\ \textbf{求职状态：}<如：27 届本科生，可全职实习 6 个月，随时到岗>}\par
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.2\textwidth}
+  \vspace{0pt}
+  \raggedleft
+  \IfFileExists{photo.jpg}{%
+    \includegraphics[width=2.4cm]{photo.jpg}%
+  }{%
+    \fbox{\parbox[c][3.2cm][c]{2.4cm}{\centering\small 证件照}}%
+  }
+\end{minipage}
+
+% ===================== 教育背景 =====================
+\resumesection{教育背景}
+\entry{某某大学\quad 计算机科学与技术（本科）}{<20XX 年 9 月 - 20XX 年 6 月>}
+\begin{itemize}
+  \item \textbf{GPA：<X.X>\quad CET6：<XXX>}
+  \item 相关课程：数据结构与算法、操作系统、计算机网络、分布式系统
+\end{itemize}
+
+% ===================== 专业技能 =====================
+\resumesection{专业技能}
+\begin{itemize}
+  \item \textbf{编程语言：}熟悉 \textbf{C/C++}，掌握 C++17 现代特性（智能指针、多线程并发、STL）；具备 \textbf{Go、Python} 项目经验。
+  \item \textbf{系统与工具：}熟悉 \textbf{Linux} 开发调试环境；熟练使用 \textbf{Git、CMake、Docker} 等工具。
+  \item \textbf{方向技能：}<按目标岗位写，如：熟悉分布式系统基本原理，手写实现过一致性哈希、选主与租约机制。>
+\end{itemize}
+
+% ===================== 实习经历 =====================
+\resumesection{实习经历}
+
+\entry{某科技公司｜后端开发工程师（实习）}{<20XX.0X-20XX.0X>}
+\begin{itemize}
+  \item \textbf{<模块名>：}<做了什么 + 技术方案 + 量化结果，如：负责订单服务的接口开发与性能优化，通过 Redis 缓存热点数据，接口 P99 延迟从 800ms 降至 120ms。>
+  \item \textbf{<模块名>：}<第二条要点>
+\end{itemize}
+
+% ===================== 项目经历 =====================
+\resumesection{项目经历}
+
+\entry{高并发 KV 缓存系统（示例）}{<20XX.0X-20XX.0X>}
+\techline{C++17、多线程、LRU、一致性哈希}
+\begin{itemize}
+  \item \textbf{缓存核心：}基于 C++17 实现线程安全 KV 缓存，手写分片 LRU 淘汰策略，降低高并发下的锁竞争，支撑 <X> 万 QPS 读写。
+  \item \textbf{动态扩容：}通过一致性哈希实现节点动态扩缩容，数据迁移量降低至 <X>\%。
+  \item \textbf{性能验证：}使用 <压测工具> 完成基准测试，对比 <基线方案> 吞吐量提升 <X>\%。
+\end{itemize}
+
+\entry{分布式任务调度器（示例）}{<20XX.0X-20XX.0X>}
+\techline{Go、gRPC、etcd、任务编排}
+\begin{itemize}
+  \item \textbf{调度架构：}实现 Master-Worker 架构的分布式任务调度器，支持任务分片、失败重试与超时摘除。
+  \item \textbf{高可用设计：}基于 etcd 选主与租约机制实现调度器高可用，Master 故障后 <X> 秒内完成自动切换。
+\end{itemize}
+
+% ===================== 自我评价 =====================
+\resumesection{自我评价}
+\begin{itemize}
+  \item <一段话说清你的技术底座 + 差异化经历 + 求职方向，如：具备扎实的系统开发功底，核心项目全部手写并开源；对基础架构方向有浓厚兴趣，学习能力强。>
+\end{itemize}
+
+\end{document}

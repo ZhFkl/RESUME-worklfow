@@ -1,0 +1,10 @@
+# LaTeX intermediates
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Personal files — never commit real ones
+photo.jpg
