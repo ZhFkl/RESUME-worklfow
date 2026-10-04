@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>登录 · Resume</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="account.css"></head>
+<body class="login-page"><main class="login-card"><a class="brand" href="/login.html"><span class="brand-mark">r.</span><span>resume.</span></a><h1>让每一份经历，都有归处。</h1><p class="login-subtitle">登录后，在不同设备继续维护你的素材、模板和简历。</p>
+<div class="auth-tabs" role="group" aria-label="账号操作"><button type="button" data-mode="password" aria-pressed="true">密码登录</button><button type="button" data-mode="sms">验证码登录</button><button type="button" data-mode="register">注册账号</button></div>
+<form id="login-form" class="account-form">
+<div id="registration-kind-row" hidden><label for="registration-kind">注册方式</label><select id="registration-kind"><option value="username">用户名注册</option><option value="phone">手机号注册</option></select></div>
+<div id="identifier-row"><label for="identifier">用户名 / 手机号</label><input id="identifier" autocomplete="username" maxlength="100" required></div>
+<div id="username-row" hidden><label for="new-username">用户名</label><input id="new-username" autocomplete="username" minlength="3" maxlength="32" placeholder="以字母开头，3～32 位"><small>支持字母、数字、点、下划线和短横线。</small></div>
+<div id="phone-row" hidden><label for="phone">中国大陆手机号</label><div class="phone-input"><span>+86</span><input id="phone" type="tel" autocomplete="tel-national" maxlength="11" inputmode="numeric"></div></div>
+<div id="code-row" hidden><label for="sms-code">短信验证码</label><div class="code-input"><input id="sms-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"><button class="button" id="send-code" type="button">获取验证码</button></div><small>验证码 5 分钟内有效。</small></div>
+<div id="password-row"><label id="password-label" for="password">密码</label><input id="password" type="password" autocomplete="current-password" maxlength="128" required></div>
+<div id="confirm-row" hidden><label for="confirm-password">确认密码</label><input id="confirm-password" type="password" autocomplete="new-password" maxlength="128"></div>
+<div id="legacy-row" class="legacy-notice" hidden><label><input id="keep-legacy" type="checkbox" checked> 将此浏览器原有的素材、模板和简历绑定到新账号</label><p>原文件保持不变，绑定后可用新账号继续访问。</p></div>
+<p id="sms-notice" class="account-note" hidden>手机号服务暂未启用，请先使用用户名注册或密码登录。</p><p id="auth-message" class="account-message" role="status"></p><button class="button primary account-submit" id="auth-submit" type="submit">登录</button>
+</form><div class="login-footer"><button id="forgot-password" type="button">忘记密码？</button><button id="back-login" type="button" hidden>返回登录</button></div><p class="account-note" id="recovery-note" hidden>已绑定手机号可通过验证码重设密码；尚未绑定的账号请联系管理员。</p></main><script type="module" src="login.js"></script></body></html>

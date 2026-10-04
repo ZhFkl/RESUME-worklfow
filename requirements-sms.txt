@@ -1,0 +1,2 @@
+# 可选：阿里云短信发送 SDK；基础依赖仍安装 requirements.txt
+alibabacloud_dysmsapi20170525==4.6.0

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Resume · 简历工作空间</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="account.css">
+</head>
+<body>
+  <svg class="icons" aria-hidden="true"><defs>
+    <symbol id="chat" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z"/><path d="M8 11h8"/></symbol>
+    <symbol id="book" viewBox="0 0 24 24"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v19H6a2.5 2.5 0 0 1 0-5h14M8 7h8M8 11h6"/></symbol>
+    <symbol id="files" viewBox="0 0 24 24"><path d="M8 3h8l4 4v13H8zM16 3v5h4M4 7v15h12M11 12h6M11 16h4"/></symbol>
+    <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="clip" viewBox="0 0 24 24"><path d="m9 17 8-8a3 3 0 0 0-4.2-4.2L4.5 13A5 5 0 0 0 11.6 20L20 11.5M8 14l7-7"/></symbol>
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+    <symbol id="download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+    <symbol id="edit" viewBox="0 0 24 24"><path d="m15 4 5 5M4 20l5-1L21 7l-5-5L4 14zM12 20h9"/></symbol>
+    <symbol id="expand" viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5"/></symbol>
+  </defs></svg>
+  <div class="app" id="app-shell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="#workspace" aria-label="Resume 简历工作台"><span class="brand-mark">r.</span><span>resume<span class="brand-dot">.</span></span></a>
+      <nav aria-label="工作空间导航">
+        <a href="#library" data-route="library"><svg><use href="#book"/></svg><span>我的素材库</span></a>
+        <a href="#templates" data-route="templates"><svg><use href="#files"/></svg><span>模板库</span></a>
+        <a href="#versions" data-route="versions"><svg><use href="#files"/></svg><span>简历版本</span></a>
+        <a href="#workspace" data-route="workspace" class="active" aria-current="page"><svg><use href="#chat"/></svg><span>简历工作台</span></a>
+      </nav>
+      <div class="sidebar-bottom"><span class="avatar">我</span><div>我的工作空间<small>本地服务</small></div><span class="status-dot" title="本地页面"></span></div>
+    </aside>
+    <main>
+      <header class="topbar"><h1 id="page-title">简历工作台</h1><div class="topbar-actions"><a href="#account" class="button account-top-button" id="account-link">账号</a><span class="prototype-label" id="connection-status">正在连接…</span><button class="button subtle" id="new-chat"><svg><use href="#plus"/></svg>新对话</button></div></header>
+      <section class="view chat-view" id="workspace-view" aria-label="简历工作台">
+        <div class="chat-scroll" id="chat-scroll"><div class="conversation" id="conversation" role="log" aria-live="polite" aria-label="对话记录"></div><div class="welcome" id="welcome"><span class="welcome-mark">r.</span><h2>从你的经历开始。</h2><p>聊聊你想修改的简历，或上传一份文件。</p></div></div>
+        <div class="composer-area"><div class="template-choice">当前模板：<strong id="selected-template-name">正在读取…</strong><a href="#templates">更换模板</a></div><details id="task-monitor" class="task-monitor" hidden><summary id="monitor-summary">任务耗时</summary><label for="monitor-task">最近任务</label> <select id="monitor-task"></select> <button type="button" id="monitor-refresh" class="button">刷新</button><p id="monitor-totals"></p><p id="monitor-browser"></p><div class="monitor-scroll"><table><thead><tr><th>步骤</th><th>耗时</th><th>状态 / 用量</th></tr></thead><tbody id="monitor-rows"></tbody></table></div><p class="monitor-note">子步骤包含在上级耗时内。模型耗时含网络、服务端处理和 SDK 重试，当前不拆分首字等待与生成时间。</p></details><div class="task-status" id="task-status" role="status" hidden><span id="task-label"></span><button class="button" id="retry-task" hidden>重试</button></div><form id="chat-form" class="composer"><div class="attachments" id="attachments" aria-live="polite"></div><label class="sr-only" for="message-input">发送消息</label><textarea id="message-input" rows="2" maxlength="12000" placeholder="想申请什么岗位？有什么经历值得写进简历？"></textarea><div class="composer-bottom"><div class="attach-controls"><button class="icon-button" type="button" id="attach-button" aria-label="添加文件或图片" title="添加文件或图片"><svg><use href="#clip"/></svg></button><span>文件 / 图片</span></div><button id="send-button" class="send-button" type="submit" aria-label="发送消息"><svg><use href="#arrow"/></svg></button></div></form><p class="composer-hint">支持文件和图片 · 与文字一起发送给助手处理</p><input type="file" id="file-input" accept=".pdf,.docx,.png,.jpg,.jpeg,.webp,.txt,.md" multiple hidden></div>
+      </section>
+      <section class="view library-view" id="library-view" aria-label="我的素材库" hidden>
+        <div class="document-toolbar"><div class="document-name"><svg><use href="#book"/></svg><span>项目经历库.md</span><span class="save-state" id="save-state" role="status">正在读取…</span></div><div class="document-actions"><button class="button" id="restore-draft" hidden>恢复旧草稿</button><button class="button" id="save-materials" hidden>保存</button><button class="button" id="import-md">导入 .md</button><input type="file" accept=".md,.markdown" id="md-input" hidden><button class="button" id="export-md"><svg><use href="#download"/></svg>下载 .md</button><button class="button primary" id="toggle-edit" aria-pressed="false"><svg><use href="#edit"/></svg><span>编辑文档</span></button></div></div>
+        <div id="conflict-actions" class="task-status" hidden><span>素材库已变化。请先备份草稿，再读取最新内容。</span><button id="reload-materials" class="button">备份草稿并读取最新版本</button></div><div class="document-scroller"><div class="profile-photo-card"><img id="profile-photo-preview" alt="已保存的证件照" hidden><div><strong>个人证件照</strong><p id="profile-photo-status">尚未上传。上传后，每次生成简历都会使用这张照片。</p><button type="button" class="button" id="upload-profile-photo">上传 / 更换照片</button> <button type="button" class="button" id="remove-profile-photo" hidden>移除照片</button><input type="file" id="profile-photo-input" accept=".jpg,.jpeg,.png,.webp" hidden><small>JPG / PNG / WebP，最大 5 MB。请上传本人证件照。</small></div></div><div class="document-page"><div class="document-meta">我的素材库 <span>/</span> 所有经历，一份文档</div><article id="markdown-view" class="markdown" aria-label="素材文档"></article><label for="markdown-editor" class="sr-only">编辑 Markdown 素材</label><textarea id="markdown-editor" spellcheck="false" aria-describedby="document-note" hidden></textarea><div class="document-note" id="document-note">Markdown 文档 · 自动保存到当前用户的后端素材库；处理任务期间暂不可编辑。</div></div></div>
+      </section>
+      <section class="view versions-view" id="versions-view" aria-label="简历版本" hidden>
+        <div class="versions-heading"><div><h2>每一次修改，都有迹可循。</h2><p>历史生成的简历将在这里保存，随时预览和下载。</p></div><span class="sample-label" id="versions-count">0 份</span></div>
+        <div class="versions-layout"><div class="version-list" id="version-list" aria-label="版本列表"></div>
+          <div class="pdf-panel" id="pdf-panel" hidden><div class="pdf-toolbar"><span id="pdf-name"></span><div><button class="button danger" id="delete-version" type="button" disabled>删除</button><a class="button" id="open-pdf" target="_blank" rel="noopener"><svg><use href="#expand"/></svg><span>新窗口</span></a><a class="button primary" id="download-pdf"><svg><use href="#download"/></svg><span>下载</span></a></div></div><div class="pdf-stage" id="pdf-stage" aria-busy="false"><p id="pdf-status" role="status">正在加载预览…</p><canvas id="pdf-canvas" aria-label="简历 PDF 预览" role="img" hidden></canvas></div><div class="pdf-footer"><span id="pdf-pages"></span><span>已生成的简历</span></div></div>
+        </div>
+      </section>
+<section class="view templates-view" id="templates-view" aria-label="模板库" hidden>
+        <div class="templates-heading"><div><p class="eyebrow">TEMPLATE LIBRARY</p><h2>让经历拥有合适的版式。</h2><p>选择系统模板，或上传喜欢的 PDF / 图片，制作自己的简历模板。</p></div><button class="button primary" id="upload-template-button"><svg><use href="#plus"/></svg>上传模板</button></div>
+        <div class="template-library-bar"><div class="template-filters" role="group" aria-label="模板来源"><button class="button" data-template-filter="all" aria-pressed="true">全部模板</button><button class="button" data-template-filter="system" aria-pressed="false">系统模板</button><button class="button" data-template-filter="custom" aria-pressed="false">我的模板</button></div><span id="template-count"></span></div>
+        <div id="template-task-status" class="task-status" role="status" hidden><span id="template-task-label"></span><button class="button" id="template-retry-task" hidden>重试转换</button></div>
+        <div id="template-grid" class="template-grid"></div><p class="template-library-note">上传的模板仅用于参考版式，不会把其中的人物信息加入你的素材库。转换后请先预览，再选择使用。</p>
+      </section>
+<section class="view account-view" id="account-view" aria-label="账号设置" hidden>
+<div class="account-heading"><h2>账号与安全</h2><button class="button" id="logout-button">退出登录</button></div><p id="account-identity"></p>
+<div class="account-grid"><div class="account-panel"><h3>修改密码</h3><form id="password-form" class="account-form"><label for="current-password">当前密码</label><input id="current-password" type="password" autocomplete="current-password" maxlength="128" required><label for="new-password">新密码</label><input id="new-password" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><label for="new-password-confirm">确认新密码</label><input id="new-password-confirm" type="password" autocomplete="new-password" minlength="6" maxlength="128" required><p class="account-message" id="password-message" role="status"></p><button class="button primary" type="submit">保存新密码</button></form><p class="account-note">修改后，其他设备需重新登录。忘记当前密码时，可退出后通过已绑定手机号找回。</p></div>
+<div class="account-panel"><h3>绑定手机号</h3><p id="bound-phone"></p><form id="bind-phone-form" class="account-form"><label for="bind-phone">中国大陆手机号（+86）</label><input id="bind-phone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="11" required><label for="bind-code">短信验证码</label><div class="code-input"><input id="bind-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required><button class="button" type="button" id="send-bind-code">获取验证码</button></div><p class="account-message" id="bind-message" role="status"></p><button class="button primary" id="bind-submit" type="submit">验证并绑定</button></form><p id="bind-unavailable" class="account-note" hidden>手机号服务暂未启用，当前可使用密码登录。</p><p class="account-note">绑定后可用验证码登录或找回密码。</p></div></div>
+<div class="account-panel admin-panel" id="admin-panel" hidden><div class="account-heading"><h3>用户管理</h3><button class="button" id="refresh-users">刷新</button></div><p id="admin-message" class="account-message" role="status"></p><div class="admin-list" id="admin-users"></div></div></section>
+    </main>
+  </div>
+  <dialog id="attachment-dialog" aria-labelledby="attachment-title"><div class="dialog-heading"><h2 id="attachment-title">附件</h2><button class="icon-button" data-close aria-label="关闭">×</button></div><p class="dialog-description" id="attachment-description"></p><img id="attachment-image" alt="附件图片预览" style="max-width:100%;max-height:60vh" hidden><div class="dialog-actions"><a class="button" id="attachment-download">下载原文件</a><button class="button" data-close>关闭</button></div></dialog>
+  <dialog id="delete-version-dialog" aria-labelledby="delete-version-title"><div class="dialog-heading"><h2 id="delete-version-title">删除简历版本？</h2></div><p class="dialog-description">将删除「<strong id="delete-version-name"></strong>」，此操作无法撤销。</p><p class="dialog-description">素材库和上传的原始附件会保留。</p><p id="delete-version-error" role="alert"></p><div class="dialog-actions"><button class="button" id="cancel-delete-version" data-close>取消</button><button class="button danger" id="confirm-delete-version">删除版本</button></div></dialog>
+  <dialog id="new-chat-dialog" aria-labelledby="new-chat-title"><div class="dialog-heading"><h2 id="new-chat-title">开始新对话？</h2><button class="icon-button" data-close aria-label="关闭">×</button></div><p class="dialog-description">将开始新的对话。已保存的会话、简历版本和素材库都会保留。</p><div class="dialog-actions"><button class="button" data-close>取消</button><button class="button primary" id="confirm-new-chat">新建对话</button></div></dialog>
+  <dialog id="import-dialog" aria-labelledby="import-title"><div class="dialog-heading"><h2 id="import-title">导入 Markdown 文档</h2><button class="icon-button" data-close aria-label="关闭">×</button></div><p class="dialog-description" id="import-description"></p><div class="dialog-actions"><button class="button" data-close>取消</button><button class="button" id="import-append">追加到文档</button><button class="button primary" id="import-replace">替换当前文档</button></div></dialog>
+<dialog id="reset-user-dialog" aria-labelledby="reset-user-title"><form id="reset-user-form" class="account-form"><div class="dialog-heading"><h2 id="reset-user-title">重置用户密码</h2><button type="button" class="icon-button" data-close aria-label="关闭">×</button></div><p id="reset-user-name"></p><label for="reset-user-password">新密码（至少 6 个字符）</label><input id="reset-user-password" type="password" minlength="6" maxlength="128" autocomplete="new-password" required><p class="account-note">该用户的所有登录会话将失效，请通过可靠方式告知新密码。</p><p id="reset-user-message" class="account-message" role="status"></p><button class="button primary" type="submit">确认重置</button></form></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <noscript><p class="noscript">请启用 JavaScript，以使用对话、上传与文档展示。</p></noscript>
+  <script src="vendor/marked.umd.js"></script>
+  <script src="vendor/purify.min.js"></script>
+  <script type="module" src="app.js"></script>
+<dialog id="template-upload-dialog" aria-labelledby="template-upload-title"><form id="template-upload-form"><div class="dialog-heading"><h2 id="template-upload-title">添加我的模板</h2><button type="button" class="icon-button" id="close-template-upload" aria-label="关闭">×</button></div><p class="dialog-description">上传 PDF、PNG、JPG 或 WebP，后端会根据版式重建可复用模板。最大 15 MB。</p><label for="template-name-input">模板名称</label><input id="template-name-input" maxlength="100" placeholder="例如：简洁双栏" required><label for="template-file-input">参考文件</label><input id="template-file-input" type="file" accept=".pdf,.png,.jpg,.jpeg,.webp" required><p id="template-upload-error" role="alert"></p><div class="dialog-actions"><button class="button primary" id="template-upload-submit" type="submit">上传并转换</button></div></form></dialog>
+<dialog id="template-preview-dialog" aria-labelledby="template-preview-title"><div class="dialog-heading"><h2 id="template-preview-title">模板预览</h2><button class="icon-button" id="close-template-preview" aria-label="关闭">×</button></div><p id="template-preview-description" class="dialog-description"></p><img id="template-preview-image" alt="模板排版预览"><p id="template-preview-error" role="alert"></p></dialog>
+</body>
+</html>

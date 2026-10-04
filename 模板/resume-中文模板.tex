@@ -3,7 +3,7 @@
 % 用法：复制本文件另存为 resume-<目标公司>.tex，替换内容，不要改动样式宏
 % 编译：xelatex resume-中文模板.tex（连续编译两次）
 % 依赖：ctex + fandol 中文字体、fontawesome5、tex-gyre（Overleaf 自带）
-% 证件照：photo.jpg 放同目录；无照片时自动降级为无边框占位，不影响编译
+% 证件照：后端复制个人照片为同目录 photo.jpg；无照片时不显示占位框
 
 \documentclass[UTF8, a4paper, fontset=fandol]{ctexart}
 
@@ -20,8 +20,8 @@
   ItalicFont = texgyretermes-italic.otf,
   BoldItalicFont = texgyretermes-bolditalic.otf]
 
-% 页眉主题色（深红；可改为自己喜欢的颜色）
-\definecolor{hdred}{RGB}{139, 0, 0}
+% 页眉统一使用黑色，与英文模板保持一致
+\definecolor{headercolor}{RGB}{0, 0, 0}
 
 % 仿斜体中文字体族：用于"核心技术"行和右侧日期
 \setCJKfamilyfont{songsl}{FandolSong-Regular.otf}[
@@ -66,22 +66,22 @@
 \noindent
 \begin{minipage}[t]{0.78\textwidth}
   \vspace{0pt}
-  {\color{hdred}\large 姓名：张明}\par
+  {\color{headercolor}\large 姓名：张明}\par
   \vspace{3pt}
-  {\color{hdred}\faPhone\ +86 138-0000-0000\ \textbar\ \faEnvelope\
+  {\color{headercolor}\faPhone\ +86 138-0000-0000\ \textbar\ \faEnvelope\
    \href{mailto:zhangming@example.com}{zhangming@example.com}\ \textbar\ \faGithub\
    \href{https://github.com/yourname}{github.com/yourname}}\par
   \vspace{3pt}
-  {\color{hdred}\faBriefcase\ \textbf{求职状态：}<如：27 届本科生，可全职实习 6 个月，随时到岗>}\par
+  {\color{headercolor}\faBriefcase\ \textbf{求职状态：}<如：27 届本科生，可全职实习 6 个月，随时到岗>}\par
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.2\textwidth}
   \vspace{0pt}
   \raggedleft
   \IfFileExists{photo.jpg}{%
-    \includegraphics[width=2.4cm]{photo.jpg}%
+    \includegraphics[width=2.4cm,height=3.2cm,keepaspectratio]{photo.jpg}%
   }{%
-    \fbox{\parbox[c][3.2cm][c]{2.4cm}{\centering\small 证件照}}%
+    \vspace{0pt}%
   }
 \end{minipage}
 

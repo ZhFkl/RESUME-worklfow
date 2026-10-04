@@ -1,5 +1,5 @@
 % resume-en-template.tex — English single-page resume template (example persona: Alex Zhang)
-% US-letter, classic layout: centered name, small-caps section headers with rules, right-aligned dates. No photo.
+% US-letter, classic layout: centered name, small-caps section headers with rules, right-aligned dates. Includes saved profile photo when available.
 % Usage: copy to resume-<company>.tex, replace content, do not touch the style macros.
 % Compile: xelatex resume-en-template.tex (twice)
 
@@ -7,6 +7,8 @@
 
 \usepackage[letterpaper,margin=0.55in]{geometry}
 \usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{graphicx}
 \usepackage[hidelinks]{hyperref}
 
 \pagestyle{empty}
@@ -34,11 +36,14 @@
 \begin{document}
 
 %---------- HEADING ----------
+\IfFileExists{photo.jpg}{\noindent\begin{minipage}[t]{0.78\textwidth}\vspace{0pt}}{}
 \begin{center}
+  \color{black} % Keep all heading text black, matching the Chinese template.
   {\LARGE \textbf{Alex Zhang}}\\[3pt]
   \href{mailto:zhangming@example.com}{zhangming@example.com} \ $|$\  +86 138-0000-0000 \ $|$\  \href{https://github.com/yourname}{github.com/yourname}\\[2pt]
   \small <City, Country (UTC+X)> \ $|$\  <Availability, e.g. Available for remote internship, 4+ days/week>
 \end{center}
+\IfFileExists{photo.jpg}{\end{minipage}\hfill\begin{minipage}[t]{0.2\textwidth}\vspace{0pt}\raggedleft\includegraphics[width=2.4cm,height=3.2cm,keepaspectratio]{photo.jpg}\end{minipage}\par}{}
 
 %---------- EDUCATION ----------
 \resumesection{Education}

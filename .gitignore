@@ -8,3 +8,9 @@
 
 # Personal files — never commit real ones
 photo.jpg
+.env
+.venv/
+__pycache__/
+data/
+history.json
+我的项目经历.md

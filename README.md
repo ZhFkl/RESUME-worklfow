@@ -12,6 +12,15 @@
 
 ---
 
+## 本地 Agent 与网站后端
+
+已将命令行 Agent 拆分为可复用核心、本地工具模块、用户与会话存储、后台任务和 HTTP API。每位用户拥有独立的长期素材库，多次会话共享素材，生成版本独立保存。
+
+- [架构设计](docs/架构设计.md)：模块职责、运行位置、用户存储与接口。
+- [本地运行](docs/本地运行.md)：依赖、配置、终端与 API 启动、请求示例和测试。
+
+已提供登录页及素材文档、模板库、简历版本、对话工作台、账号管理五个页面。模板库支持系统模板和上传 PDF/图片转换的个人 LaTeX 模板，预览后选择用于后续生成。PDF / DOCX 提取文本后自动调用已配置模型整理到用户素材库，聊天和 PDF 预览下载均连接后端。用 `.venv/bin/python -m uvicorn api:app --host 127.0.0.1 --port 8765` 启动后访问 <http://127.0.0.1:8765>，详见 [网页使用说明](prototype/README.md)。支持开放注册、密码登录、管理员管理及旧资料绑定；手机号注册/登录/找回需配置短信服务，详见[本地运行](docs/本地运行.md)。下面原有工作流介绍的是直接使用 AI 编程助手操作仓库的方式。
+
 ## 怎么用（就三步）
 
 **第 1 步：把你的经历填进 `项目经历库.md`（只填一次）**
@@ -38,7 +47,7 @@ AI 会自动完成：分析 JD 要求 → 从素材库挑选最匹配的项目�
 
 <table align="center">
   <tr>
-    <td align="center"><b>中文 · 深红页眉</b><br><img src="docs/images/template-cn.png" width="360"></td>
+    <td align="center"><b>中文 · 黑色页眉</b><br><img src="docs/images/template-cn.png" width="360"></td>
     <td align="center"><b>英文 · 美式极简</b><br><img src="docs/images/template-en.png" width="360"></td>
   </tr>
 </table>
