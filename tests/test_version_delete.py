@@ -4,8 +4,8 @@ import tempfile
 import unittest
 
 from starlette.testclient import TestClient
-from api import create_app
-from session_store import SessionStore
+from backend.api import create_app
+from backend.session_store import SessionStore
 
 
 def seed(store, uid, sid, names=('first','second')):
@@ -65,7 +65,7 @@ class VersionDeleteTests(unittest.TestCase):
             self.assertFalse(list(store.workspace(uid).glob('.delete-version-*')))
 
     def test_invalid_path_cannot_delete_materials(self):
-        from session_store import NotFound
+        from backend.session_store import NotFound
         with tempfile.TemporaryDirectory() as directory:
             store=SessionStore(directory);uid=store.create_user()['user_id'];sid=store.create_session(uid)['session_id']
             _,output,records=seed(store,uid,sid,('first',))

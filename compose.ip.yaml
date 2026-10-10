@@ -1,0 +1,38 @@
+# Public IP HTTP testing. Traffic is unencrypted; use compose.yaml for domain HTTPS.
+# Reuses the same project/service/data path as compose.ssh.yaml.
+name: resume
+
+services:
+  app:
+    image: ${RESUME_IMAGE:?Set RESUME_IMAGE to the loaded image tag}
+    pull_policy: never
+    env_file:
+      - path: ${RESUME_APP_ENV_FILE:-./deploy/app.env}
+        format: raw
+    environment:
+      RESUME_DATA_DIR: /data
+      RESUME_PUBLIC_ORIGIN: ${RESUME_PUBLIC_ORIGIN:?Set RESUME_PUBLIC_ORIGIN to http://server-IP (include only non-default ports)}
+      RESUME_COOKIE_SECURE: "false"
+    command: ["python", "-m", "uvicorn", "backend.api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--no-proxy-headers", "--no-access-log"]
+    ports: ["0.0.0.0:${RESUME_HTTP_PORT:-80}:8000"]
+    user: "10001:10001"
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    cpus: ${RESUME_APP_CPUS:-2}
+    mem_limit: ${RESUME_APP_MEMORY:-2g}
+    pids_limit: 256
+    tmpfs:
+      - /tmp:size=1g,mode=1777
+    volumes:
+      - type: bind
+        source: ${RESUME_DATA_PATH:?Set RESUME_DATA_PATH to the persistent server directory}
+        target: /data
+        bind:
+          create_host_path: false
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}

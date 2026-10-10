@@ -1,0 +1,23 @@
+# Allow only runtime sources/assets. Never send personal data or secrets to the builder.
+**
+!/*.py
+!/AGENTS.md
+!/requirements.txt
+!/requirements-sms.txt
+!/backend/
+!/backend/**
+!/frontend/
+!/frontend/**
+!/模板/
+!/模板/**
+!/deploy/
+!/deploy/check_runtime.py
+!/deploy/install_fontawesome.py
+!/deploy/vendor/
+!/deploy/vendor/fontawesome5-5.15.4.zip
+**/__pycache__/
+**/*.pyc
+**/.env*
+**/*.log
+**/*.aux
+**/*.out

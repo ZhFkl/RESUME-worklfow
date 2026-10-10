@@ -1,4 +1,4 @@
-from tex_edits import source_hash
+from backend.tex_edits import source_hash
 from resume_fixtures import full_page_tex
 import asyncio
 import json
@@ -11,12 +11,12 @@ import unittest
 from unittest.mock import patch
 
 from starlette.testclient import TestClient
-from agent_core import AgentCore, AgentError
-from api import create_app
-from tools import LocalTools
-from session_store import Busy, NotFound, SessionStore
-from task_manager import TaskManager, failure_message
-from workspace import resolve_file
+from backend.agent_core import AgentCore, AgentError
+from backend.api import create_app
+from backend.tools import LocalTools
+from backend.session_store import Busy, NotFound, SessionStore
+from backend.task_manager import TaskManager, failure_message
+from backend.workspace import resolve_file
 
 
 class StoreTests(unittest.TestCase):
@@ -134,7 +134,8 @@ class APITests(unittest.TestCase):
                 self.assertEqual(failed['error'], '模拟失败')
             with TestClient(create_app(directory, FakeCore, allow_legacy_users=True)) as client:
                 messages = client.get(base + '/messages', headers=ha).json()['messages']
-                self.assertEqual([m['content'] for m in messages], ['hello', '已完成'])
+                self.assertEqual([m['content'] for m in messages], ['hello', '已完成', 'fail', ''])
+            self.assertTrue(messages[-1]['incomplete'])
 
 
 class Message:
@@ -183,7 +184,7 @@ class LocalToolTests(unittest.IsolatedAsyncioTestCase):
             async def create(client, **kwargs):
                 client.calls += 1
                 names = {tool['function']['name'] for tool in kwargs['tools']}
-                self.assertEqual(names, {'resume__read_file', 'resume__write_file', 'resume__edit_file', 'resume__compile_pdf', 'resume__preview_pdf'})
+                self.assertEqual(names, {'resume__read_selected_template', 'resume__read_file', 'resume__write_file', 'resume__edit_file', 'resume__compile_pdf', 'resume__preview_pdf'})
                 context = kwargs['messages'][1]
                 material = json.loads(context['content'].split('\n', 1)[1])['markdown']
                 self.assertEqual(material, original if client.calls == 1 else changed)

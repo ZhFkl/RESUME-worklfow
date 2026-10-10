@@ -1,0 +1,69 @@
+name: resume
+
+services:
+  app:
+    # Server pulls a published image; it never builds from source.
+    image: ${RESUME_IMAGE:?Set RESUME_IMAGE to a published version tag or digest}
+    env_file:
+      - path: ${RESUME_APP_ENV_FILE:-./deploy/app.env}
+        format: raw
+    environment:
+      RESUME_DATA_DIR: /data
+      RESUME_PUBLIC_ORIGIN: https://${RESUME_DOMAIN:?Set RESUME_DOMAIN to your domain}
+      RESUME_COOKIE_SECURE: "true"
+    # Only Caddy shares this network and the app has no published host port.
+    # Caddy overwrites untrusted forwarded client headers.
+    command: ["python", "-m", "uvicorn", "backend.api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*", "--no-access-log"]
+    user: "10001:10001"
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    cpus: ${RESUME_APP_CPUS:-2}
+    mem_limit: ${RESUME_APP_MEMORY:-2g}
+    pids_limit: 256
+    tmpfs:
+      - /tmp:size=1g,mode=1777
+    volumes:
+      - type: bind
+        source: ${RESUME_DATA_PATH:?Set RESUME_DATA_PATH to the persistent server directory}
+        target: /data
+        bind:
+          create_host_path: false
+    networks: [backend]
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+
+  proxy:
+    image: ${RESUME_PROXY_IMAGE:-caddy:2-alpine@sha256:881bbc60f9986d5ab8e7cfd6cf7e4ef3c9c0439fef2429d035d065577882f028}
+    restart: unless-stopped
+    environment:
+      RESUME_DOMAIN: ${RESUME_DOMAIN:?Set RESUME_DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - type: bind
+        source: ./deploy/Caddyfile
+        target: /etc/caddy/Caddyfile
+        read_only: true
+        bind:
+          create_host_path: false
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [backend]
+    depends_on:
+      app:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+
+networks:
+  backend:
+
+# Only certificate state uses named volumes. User data is the external bind directory.
+volumes:
+  caddy_data:
+  caddy_config:

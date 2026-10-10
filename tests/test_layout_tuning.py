@@ -3,9 +3,9 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from layout_tuning import apply_parameters, parameters
-from session_store import SessionStore
-from tools import LocalTools
+from backend.layout_tuning import apply_parameters, parameters
+from backend.session_store import SessionStore
+from backend.tools import LocalTools
 from resume_fixtures import full_page_tex
 import test_pdf_preview as preview_tests
 from test_pdf_preview import actions, response

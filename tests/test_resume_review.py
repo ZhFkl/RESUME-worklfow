@@ -1,6 +1,6 @@
 import unittest
 
-from resume_review import layout_metrics, quality_issues
+from backend.resume_review import layout_metrics, quality_issues
 
 
 class Page:
@@ -48,8 +48,8 @@ class ResumeReviewTests(unittest.TestCase):
     def test_whitespace_is_a_gate_even_without_project_headings(self):
         for title in ('Projects', '项目经历', '工作经历'):
             text = r'\begin{document}' + title + ' confirmed fact' + r'\end{document}'
-            self.assertEqual(quality_issues(text, '', Page(40)), [])
-            issues = quality_issues(text, '', Page(40.1))
+            self.assertEqual(quality_issues(text, '', Page(50)), [])
+            issues = quality_issues(text, '', Page(50.1))
             self.assertEqual(len(issues), 1)
             self.assertIn('超过参考简历', issues[0])
             # Covers the old blind spot: 8% was below the previous 14% trigger.
@@ -59,7 +59,7 @@ class ResumeReviewTests(unittest.TestCase):
         layout = layout_metrics(Page(36.238701))
         self.assertEqual(layout['bottom_blank_percent'], 3.62)
         self.assertEqual(layout['target_bottom_blank_percent'], 3.62)
-        self.assertEqual(layout['max_bottom_blank_percent'], 4.0)
+        self.assertEqual(layout['max_bottom_blank_percent'], 5.0)
         self.assertTrue(layout['within_whitespace_limit'])
 
         class EmptyPage(Page):

@@ -8,11 +8,11 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from agent_core import AgentCore
-from tools import LocalTools, PreviewResult
-from tex_edits import source_hash
-from session_store import SessionStore
-from task_manager import TaskManager
+from backend.agent_core import AgentCore
+from backend.tools import LocalTools, PreviewResult
+from backend.tex_edits import source_hash
+from backend.session_store import SessionStore
+from backend.task_manager import TaskManager
 from test_backend import Message, MockClient
 
 
@@ -74,7 +74,10 @@ class PreviewTests(unittest.IsolatedAsyncioTestCase):
         uid = store.create_user()['user_id']; sid = store.create_session(uid)['session_id']
         core = AgentCore(store, tools_factory=tools_factory, client_factory=client)
         manager = TaskManager(store, core)
-        with patch.dict(os.environ, AGENT_API_KEY='test', AGENT_MODEL='test'):
+        fixture = Path(directory.name) / 'fixture.tex'
+        fixture.write_text(content())
+        selected = {'id': 'fixture', 'name': 'Preview fixture', 'path': fixture, 'status': 'ready', 'source': 'system'}
+        with patch('backend.template_library.TemplateLibrary.builtins', return_value=[selected]), patch.dict(os.environ, AGENT_API_KEY='test', AGENT_MODEL='test'):
             tid = manager.submit(uid, sid, 'generate resume and inspect preview')
             import asyncio
             await asyncio.gather(*manager.running)
@@ -149,22 +152,21 @@ class PreviewTests(unittest.IsolatedAsyncioTestCase):
                 if client.calls == 1:
                     return response(actions(
                         ('write_file', {'path': 'resume.tex', 'content':
-                            r'\documentclass{article}\pagestyle{empty}\begin{document}Sparse draft\end{document}'}),
+                            content().split(r'\begin{document}')[0] + r'\begin{document}Sparse draft\end{document}'}),
                         ('compile_pdf', {'tex_file': 'resume.tex'})))
                 messages = kwargs['messages']
                 result = messages[-2]['content']
                 metadata = json.loads(result.split('\n')[-1])
                 layout = metadata['layout_checks'][0]
-                test.assertEqual(layout['max_bottom_blank_percent'], 4.0)
+                test.assertEqual(layout['max_bottom_blank_percent'], 5.0)
                 test.assertTrue(any(part['type'] == 'image_url' for part in messages[-1]['content']))
                 if client.calls == 2:
                     test.assertIn('质量检查未通过', result)
                     test.assertFalse(layout['within_whitespace_limit'])
-                    sparse = r'\documentclass{article}\pagestyle{empty}\begin{document}Sparse draft\end{document}'
+                    sparse = content().split(r'\begin{document}')[0] + r'\begin{document}Sparse draft\end{document}'
                     preamble, body = content().split(r'\begin{document}')
                     return response(actions(('edit_file', {'path':'resume.tex', 'base_sha256':source_hash(sparse),
                         'edits_json':json.dumps([
-                            {'old':r'\documentclass{article}\pagestyle{empty}', 'new':preamble},
                             {'old':'Sparse draft', 'new':body.removesuffix(r'\end{document}')},
                         ])}), ('compile_pdf', {'tex_file':'resume.tex'})))
                 test.assertIn('编译成功', result)
@@ -183,7 +185,7 @@ class PreviewTests(unittest.IsolatedAsyncioTestCase):
                 if client.calls == 1:
                     return response(actions(
                         ('write_file', {'path': 'resume.tex', 'content':
-                            r'\documentclass{article}\pagestyle{empty}\begin{document}Sparse draft\end{document}'}),
+                            content().split(r'\begin{document}')[0] + r'\begin{document}Sparse draft\end{document}'}),
                         ('compile_pdf', {'tex_file': 'resume.tex'})))
                 return response(Message(content='Looks great, completed!'))
 

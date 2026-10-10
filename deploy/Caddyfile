@@ -1,0 +1,7 @@
+{$RESUME_DOMAIN} {
+    encode zstd gzip
+    request_body {
+        max_size 50MB
+    }
+    reverse_proxy app:8000
+}

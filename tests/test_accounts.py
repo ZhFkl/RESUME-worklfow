@@ -7,37 +7,44 @@ from unittest.mock import patch
 
 from argon2 import PasswordHasher
 from starlette.testclient import TestClient
-from api import create_app
-from account_store import AccountError, AccountStore
-from session_store import SessionStore
+from backend.api import create_app
+from backend.account_store import AccountError, AccountStore
+from backend.session_store import SessionStore
 from test_backend import FakeCore
 
 
-class SMS:
-    enabled=True
-    def __init__(self):self.sent=[];self.fail=False
-    async def send(self,phone,code):
-        if self.fail:raise AccountError('发送失败',503)
-        self.sent.append((phone,code))
+class Email:
+    enabled = True
+    def __init__(self):
+        self.sent = []
+        self.fail = False
+    async def send(self, address, code):
+        if self.fail:
+            raise AccountError('验证码邮件发送失败', 503)
+        self.sent.append((address, code))
+
+
+class DisabledSms:
+    enabled = False
 
 
 class AccountTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
-        self.hasher=patch('account_store.PH',PasswordHasher(time_cost=1,memory_cost=1024,parallelism=1));self.hasher.start();self.addCleanup(self.hasher.stop)
-        self.sms=SMS();self.app=create_app(self.temp.name,sms_factory=lambda:self.sms)
+        self.hasher=patch('backend.account_store.PH',PasswordHasher(time_cost=1,memory_cost=1024,parallelism=1));self.hasher.start();self.addCleanup(self.hasher.stop)
+        self.email=Email();self.app=create_app(self.temp.name,email_factory=lambda:self.email,sms_factory=DisabledSms)
         self.client=TestClient(self.app);self.client.__enter__();self.addCleanup(self.client.__exit__,None,None,None)
         self.client.headers['X-Resume-Client']='browser'
         self.accounts=self.app.state.accounts;self.store=self.app.state.store
 
     def signup(self,name='tester',legacy=None):
-        data={'username':name,'password':'Testing password 123','role':'admin'}
+        address=name.lower()+'@example.com'
+        response=self.client.post('/auth/email/send',json={'email':address})
+        self.assertEqual(response.status_code,200,response.text)
+        data={'username':name,'email':address,'code':self.email.sent[-1][1],'password':'Testing password 123','role':'admin'}
         if legacy:data['legacy_token']=legacy
         r=self.client.post('/auth/register',json=data);self.assertEqual(r.status_code,200,r.text)
         self.client.headers['X-CSRF-Token']=r.json()['csrf'];return r
-
-    def next_sms(self):
-        with self.store.db() as db:db.execute("DELETE FROM auth_limits WHERE key LIKE 'sms:minute:%'")
 
     def test_password_login_logout_change_and_storage(self):
         self.assertEqual(self.client.get('/materials').status_code,401)
@@ -62,7 +69,7 @@ class AccountTests(unittest.TestCase):
     def test_duplicate_csrf_and_user_admin_boundaries(self):
         account=self.signup().json()['account'];uid=account['user_id']
         before=list((Path(self.temp.name)/'users').iterdir())
-        self.assertEqual(self.client.post('/auth/register',json={'username':'TESTER','password':'Testing password 123'}).status_code,409)
+        self.assertEqual(self.client.post('/auth/register',json={'username':'TESTER','password':'Testing password 123','email':'other@example.com','code':self.accounts.issue_email_code('other@example.com')}).status_code,409)
         self.assertEqual(list((Path(self.temp.name)/'users').iterdir()),before)
         self.assertEqual(self.client.get('/admin/users').status_code,403)
         self.assertEqual(self.client.post('/sessions',headers={'X-CSRF-Token':'wrong'}).status_code,403)
@@ -89,48 +96,30 @@ class AccountTests(unittest.TestCase):
         self.assertEqual((root/'项目经历库.md').read_text(),'Confirmed personal facts')
         self.assertEqual(self.client.post('/auth/register',json={'username':'hijack','password':'Testing password 123','legacy_token':old['token']}).status_code,400)
 
-    def test_sms_registration_login_recovery_and_one_use(self):
-        phone='13800138000'
-        result=self.client.post('/auth/sms/send',json={'phone':phone,'purpose':'register'})
-        self.assertEqual(result.status_code,200,result.text);self.assertNotIn('code',result.json())
-        code=self.sms.sent[-1][1]
-        self.assertEqual(self.client.post('/auth/sms/send',json={'phone':phone,'purpose':'login'}).status_code,429)
-        r=self.client.post('/auth/sms/login',json={'phone':phone,'mode':'register','code':code,'password':'Testing password 123'})
-        self.assertEqual(r.status_code,200,r.text);uid=r.json()['account']['user_id'];old_token=self.client.cookies.get('resume_session')
-        self.assertEqual(self.client.post('/auth/sms/login',json={'phone':phone,'mode':'register','code':code}).status_code,400)
-        self.next_sms();self.client.post('/auth/sms/send',json={'phone':phone,'purpose':'reset'});reset=self.sms.sent[-1][1]
-        self.assertEqual(self.client.post('/auth/sms/login',json={'phone':phone,'mode':'login','code':reset}).status_code,400)
-        changed=self.client.post('/auth/password/reset',json={'phone':phone,'code':reset,'password':'Recovered password 456'})
-        self.assertEqual(changed.status_code,200,changed.text)
-        with self.assertRaises(AccountError):self.accounts.authenticate(old_token)
-        self.assertEqual(self.accounts.login_password(phone,'Recovered password 456'),uid)
-        self.next_sms();self.client.post('/auth/sms/send',json={'phone':phone,'purpose':'login'})
-        login=self.client.post('/auth/sms/login',json={'phone':phone,'code':self.sms.sent[-1][1]})
-        self.assertEqual(login.status_code,200,login.text);self.assertEqual(login.json()['account']['user_id'],uid)
-
-    def test_binding_expiry_attempt_limits_and_disabled_delivery(self):
-        account=self.signup().json()['account'];phone='+8613900139000'
-        self.client.post('/auth/sms/send',json={'phone':phone,'purpose':'bind'});code=self.sms.sent[-1][1]
-        r=self.client.put('/auth/phone',json={'phone':phone,'code':code})
-        self.assertEqual(r.status_code,200,r.text);self.assertEqual(r.json()['account']['phone'],phone)
-        code=self.accounts.issue_code(phone,'login')
-        wrong='000000' if code!='000000' else '111111'
-        for _ in range(5):
-            with self.assertRaises(AccountError):self.accounts.consume_code(phone,'login',wrong)
-        with self.assertRaises(AccountError):self.accounts.consume_code(phone,'login',code)
-        code=self.accounts.issue_code(phone,'login')
-        with patch('account_store.time.time',return_value=time.time()+301):
-            with self.assertRaises(AccountError):self.accounts.consume_code(phone,'login',code)
-        self.next_sms();self.sms.fail=True
-        self.assertEqual(self.client.post('/auth/sms/send',json={'phone':phone,'purpose':'login'}).status_code,503)
-        with self.store.db() as db:self.assertIsNone(db.execute("SELECT 1 FROM sms_codes WHERE phone=? AND purpose='login'",(phone,)).fetchone())
-        self.sms.enabled=False
+    def test_disabled_sms_and_existing_data_preserved(self):
+        account=self.signup().json()['account'];uid=account['user_id']
+        phone='+8613800138000'
+        with self.store.db() as db:
+            db.execute('UPDATE accounts SET phone=? WHERE user_id=?',(phone,uid))
         self.assertFalse(self.client.get('/auth/config').json()['sms_enabled'])
-        self.assertEqual(self.client.post('/auth/sms/send',json={'phone':phone,'purpose':'login'}).status_code,503)
+        for method,path in [('POST','/auth/sms/send'),('POST','/auth/sms/login'),
+                            ('POST','/auth/password/reset'),('PUT','/auth/phone')]:
+            response=self.client.request(method,path,json={'phone':phone,'code':'123456'})
+            self.assertIn(response.status_code,(400,404,405,503),response.text)
+        with self.store.db() as db:
+            self.assertEqual(db.execute('SELECT phone FROM accounts WHERE user_id=?',(uid,)).fetchone()[0],phone)
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM sms_codes').fetchone()[0],0)
+        self.client.post('/auth/logout')
+        for identifier in [phone,'13800138000']:
+            result=self.client.post('/auth/login',json={'identifier':identifier,'password':'Testing password 123'})
+            self.assertEqual(result.status_code,401)
+        result=self.client.post('/auth/login',json={'identifier':'tester','password':'Testing password 123'})
+        self.assertEqual(result.status_code,200)
+        self.assertEqual(result.json()['account']['user_id'],uid)
 
     def test_login_rate_limit_and_session_expiry(self):
         self.signup();token=self.client.cookies.get('resume_session')
-        with patch('account_store.time.time',return_value=time.time()+8*24*3600):
+        with patch('backend.account_store.time.time',return_value=time.time()+8*24*3600):
             with self.assertRaises(AccountError):self.accounts.authenticate(token)
         for _ in range(10):self.client.post('/auth/login',json={'identifier':'tester','password':'wrong'})
         self.assertEqual(self.client.post('/auth/login',json={'identifier':'tester','password':'wrong'}).status_code,429)
@@ -172,11 +161,104 @@ class AccountTests(unittest.TestCase):
 
     def test_password_change_cannot_overwrite_concurrent_reset(self):
         uid=self.signup().json()['account']['user_id']
-        from account_store import password_hash
+        from backend.account_store import password_hash
         def concurrent_reset(value):
             self.accounts.change_password(uid,'Concurrent reset password',verified=True)
             return password_hash(value)
-        with patch('account_store.password_hash',side_effect=lambda value:password_hash(value) if value=='Concurrent reset password' else concurrent_reset(value)):
+        with patch('backend.account_store.password_hash',side_effect=lambda value:password_hash(value) if value=='Concurrent reset password' else concurrent_reset(value)):
             with self.assertRaises(AccountError):
                 self.accounts.change_password(uid,'Stale request password','Testing password 123')
         self.assertEqual(self.accounts.login_password('tester','Concurrent reset password'),uid)
+
+    def test_email_registration_is_required_and_login_accepts_both_identifiers(self):
+        self.assertEqual(self.client.post('/auth/register',json={'username':'missing','password':'Testing password 123'}).status_code,400)
+        self.assertEqual(self.client.post('/auth/register',json={'username':'missing','password':'Testing password 123','email':'missing@example.com','code':'123456'}).status_code,400)
+        result=self.signup();uid=result.json()['account']['user_id']
+        self.assertEqual(result.json()['account']['email'],'tester@example.com')
+        self.client.post('/auth/logout')
+        for identifier in ['TESTER',' TESTER@EXAMPLE.COM ']:
+            response=self.client.post('/auth/login',json={'identifier':identifier,'password':'Testing password 123'})
+            self.assertEqual(response.status_code,200,response.text)
+            self.assertEqual(response.json()['account']['user_id'],uid)
+        # Old accounts with no email are unaffected.
+        old=self.accounts.create('olduser','Testing password 123')
+        self.assertEqual(self.accounts.login_password('olduser','Testing password 123'),old)
+        self.assertIsNone(self.accounts.account(old)['email'])
+
+    def test_email_delivery_limits_failures_and_unconfigured_service(self):
+        address='recipient@example.com'
+        response=self.client.post('/auth/email/send',json={'email':address.upper()})
+        self.assertEqual(response.status_code,200,response.text)
+        self.assertNotIn('code',response.json())
+        code=self.email.sent[-1][1]
+        with self.store.db() as db:
+            row=db.execute('SELECT * FROM email_codes WHERE email=?',(address,)).fetchone()
+            self.assertNotEqual(row['code_hash'],code)
+        self.assertEqual(self.client.post('/auth/email/send',json={'email':address}).status_code,429)
+        self.email.fail=True
+        self.assertEqual(self.client.post('/auth/email/send',json={'email':'fail@example.com'}).status_code,503)
+        with self.store.db() as db:
+            self.assertIsNone(db.execute('SELECT * FROM email_codes WHERE email=?',('fail@example.com',)).fetchone())
+        self.email.enabled=False
+        self.assertFalse(self.client.get('/auth/config').json()['registration_open'])
+        self.assertEqual(self.client.post('/auth/email/send',json={'email':'off@example.com'}).status_code,503)
+        self.assertEqual(len(self.email.sent),1)
+        self.assertEqual(self.client.post('/auth/email/send',json={'email':'bad\r\nBcc:evil@example.com'}).status_code,400)
+
+    def test_email_code_expiry_attempts_resend_and_atomic_consumption(self):
+        address='code@example.com'
+        code=self.accounts.issue_email_code(address)
+        wrong='000000' if code!='000000' else '111111'
+        for _ in range(5):
+            with self.assertRaises(AccountError):
+                self.accounts.create('codeuser','Testing password 123',email=address,email_code=wrong)
+        with self.assertRaises(AccountError):
+            self.accounts.create('codeuser','Testing password 123',email=address,email_code=code)
+        with self.store.db() as db:
+            self.assertGreaterEqual(db.execute('SELECT attempts FROM email_codes WHERE email=?',(address,)).fetchone()[0],5)
+        code=self.accounts.issue_email_code(address)
+        with patch('backend.account_store.time.time',return_value=time.time()+301):
+            with self.assertRaises(AccountError):
+                self.accounts.create('codeuser','Testing password 123',email=address,email_code=code)
+        with patch('backend.account_store.secrets.randbelow',side_effect=[123456,654321]):
+            old=self.accounts.issue_email_code(address)
+            code=self.accounts.issue_email_code(address)
+        with self.assertRaises(AccountError):
+            self.accounts.create('codeuser','Testing password 123',email=address,email_code=old)
+        # A conflicting username must not consume a valid email code.
+        self.accounts.create('taken','Testing password 123')
+        with self.assertRaises(AccountError):
+            self.accounts.create('taken','Testing password 123',email=address,email_code=code)
+        uid=self.accounts.create('codeuser','Testing password 123',email=address,email_code=code)
+        self.assertEqual(self.accounts.account(uid)['email'],address)
+        with self.assertRaises(AccountError):
+            self.accounts.create('replay','Testing password 123',email=address,email_code=code)
+        code=self.accounts.issue_email_code(address)
+        with self.assertRaises(AccountError):
+            self.accounts.create('duplicate','Testing password 123',email=address.upper(),email_code=code)
+
+    def test_email_code_cannot_create_two_accounts_concurrently(self):
+        from concurrent.futures import ThreadPoolExecutor
+        address='parallel@example.com';code=self.accounts.issue_email_code(address)
+        def create(name):
+            try:return self.accounts.create(name,'Testing password 123',email=address,email_code=code)
+            except AccountError:return None
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results=list(pool.map(create,['parallelone','paralleltwo']))
+        self.assertEqual(sum(x is not None for x in results),1)
+
+    def test_existing_database_migrates_without_losing_user_workspace(self):
+        from backend.account_store import password_hash
+        with tempfile.TemporaryDirectory() as directory:
+            store=SessionStore(directory);old=store.create_user();uid=old['user_id']
+            (store.workspace(uid)/'项目经历库.md').write_text('Existing confirmed facts')
+            with store.db() as db:
+                db.execute('CREATE TABLE accounts (user_id TEXT PRIMARY KEY, username TEXT UNIQUE, phone TEXT UNIQUE, password_hash TEXT, display_name TEXT NOT NULL, role TEXT DEFAULT "user", enabled INTEGER DEFAULT 1, created_at TEXT, last_login TEXT)')
+                db.execute('INSERT INTO accounts(user_id,username,password_hash,display_name) VALUES (?,?,?,?)',
+                           (uid,'existing',password_hash('Testing password 123'),'existing'))
+            migrated=AccountStore(store)
+            self.assertEqual(migrated.login_password('existing','Testing password 123'),uid)
+            self.assertIsNone(migrated.account(uid)['email'])
+            self.assertEqual((store.workspace(uid)/'项目经历库.md').read_text(),'Existing confirmed facts')
+            # Repeated startup must be safe.
+            self.assertEqual(AccountStore(store).account(uid)['username'],'existing')

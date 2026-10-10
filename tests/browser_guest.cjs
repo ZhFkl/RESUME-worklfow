@@ -1,0 +1,44 @@
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const target=process.env.RESUME_UI_TEST_URL||'http://127.0.0.1:18800';
+if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(target))throw new Error('Use the disposable local guest_ui_server.py, never production');
+const output=process.env.RESUME_UI_ARTIFACTS||'/tmp/resume-guest-qa';fs.mkdirSync(output,{recursive:true});
+const username='guest'+Date.now();
+(async()=>{
+const browser=await chromium.launch({executablePath:'/usr/bin/google-chrome',headless:true,args:['--no-sandbox']});
+const context=await browser.newContext({viewport:{width:1440,height:900}});const page=await context.newPage();
+const errors=[];page.on('pageerror',error=>errors.push(error.message));
+const writes=[];page.on('request',r=>{if(r.method()!=='GET')writes.push(r.url());});
+await page.goto(target);await page.waitForFunction(()=>document.body.classList.contains('guest'));
+assert(await page.locator('#home-view').isVisible());assert(!await page.locator('#login-dialog').isVisible());
+await page.screenshot({path:output+'/home-desktop.png',fullPage:true});
+await page.getByRole('link',{name:'开始制作简历',exact:false}).click();await page.locator('#message-input').fill('请帮我制作一份 Python 开发简历。');await page.locator('#send-button').click();
+await page.locator('#login-dialog').waitFor({state:'visible'});assert.equal(writes.length,0);
+await page.screenshot({path:output+'/login-desktop.png'});
+await page.locator('#close-login').click();await page.locator('#attach-button').click();await page.locator('#login-dialog').waitFor({state:'visible'});await page.locator('#close-login').click();assert.equal(await page.locator('#message-input').inputValue(),'请帮我制作一份 Python 开发简历。');
+await page.locator('.sidebar a[data-route="templates"]').click();assert.equal(await page.locator('.template-card').count(),2);
+await page.getByRole('button',{name:'使用此模板'}).first().click();await page.locator('#login-dialog').waitFor({state:'visible'});
+await page.locator('#close-login').click();await page.locator('.sidebar a[data-route="workspace"]').click();await page.locator('#send-button').click();
+const frame=page.frameLocator('#login-frame');
+async function phoneLogin(){
+ await frame.locator('#phone').fill('13700137001');await frame.locator('#send-sms-code').click();await frame.getByText('短信已提交，请查看手机验证码。',{exact:true}).waitFor();
+ const sms=await (await page.request.get(target+'/test/sms-code?phone=13700137001')).json();await frame.locator('#sms-code').fill(sms.code);await frame.locator('#auth-submit').click();
+}
+await phoneLogin();await page.waitForFunction(()=>!document.body.classList.contains('guest'));
+await page.locator('#send-button').waitFor({state:'visible'});assert.equal(await page.locator('#message-input').inputValue(),'请帮我制作一份 Python 开发简历。');
+await page.waitForFunction(()=>!document.querySelector('#send-button').disabled);await page.locator('#send-button').click();await page.waitForFunction(()=>document.querySelector('#message-input').value==='');
+await page.waitForFunction(()=>!document.querySelector('#send-button').disabled&&document.querySelector('.assistant .message-body')?.textContent.trim()==='已完成');
+assert(writes.some(url=>url.endsWith('/messages')));assert(!await page.locator('#login-dialog').isVisible());
+await page.screenshot({path:output+'/workspace-desktop.png'});
+await context.clearCookies();await page.locator('#message-input').fill('登录过期后保留这条消息');await page.locator('#send-button').click();await page.locator('#login-dialog').waitFor({state:'visible'});assert.equal(await page.locator('#message-input').inputValue(),'登录过期后保留这条消息');assert.equal(await page.locator('.message').count(),0);
+await page.request.get(target+'/test/sms-reset');await page.locator('#login-frame').evaluate(el=>el.src='/login.html?embedded=1');await phoneLogin();await page.waitForFunction(()=>!document.body.classList.contains('guest')&&!document.querySelector('#send-button').disabled);assert.equal(await page.locator('#message-input').inputValue(),'登录过期后保留这条消息');
+await page.locator('#account-link').click();await page.locator('#logout-button').click();await page.waitForFunction(()=>document.body.classList.contains('guest'));assert(await page.locator('#home-view').isVisible());
+await page.goto(target+'/#library');await page.waitForFunction(()=>document.body.classList.contains('guest'));await page.locator('#toggle-edit').click();await page.locator('#login-dialog').waitFor({state:'visible'});await page.locator('#close-login').click();
+await page.goto(target+'/#versions');await page.waitForFunction(()=>document.body.classList.contains('guest'));assert(await page.getByText('每一版简历，都为你保存').isVisible());
+await page.setViewportSize({width:390,height:844});await page.goto(target);await page.waitForFunction(()=>document.body.classList.contains('guest'));await page.screenshot({path:output+'/home-mobile.png',fullPage:true});
+assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+await page.locator('#menu-view a[href="#workspace"]').click();await page.locator('#message-input').fill('手机端未登录草稿');await page.locator('#send-button').click();await page.locator('#login-dialog').waitFor({state:'visible'});await page.screenshot({path:output+'/login-mobile.png'});
+assert.deepEqual(errors,[]);console.log('PASS: landing, guest navigation, gated send/upload/edit, draft preservation, signup, authenticated send, logout, mobile; no page errors.');
+await browser.close();
+})().catch(e=>{console.error(e);process.exit(1)});

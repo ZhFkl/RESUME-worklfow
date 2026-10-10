@@ -1,5 +1,5 @@
 import json
-from tex_edits import source_hash
+from backend.tex_edits import source_hash
 import asyncio
 import io
 from pathlib import Path
@@ -11,11 +11,11 @@ from PIL import Image
 from pypdf import PdfReader
 from starlette.testclient import TestClient
 
-from api import create_app
-from profile_assets import photo_path, photo_issues, snapshot_photo
-from session_store import SessionStore
-from tools import LocalTools
-from process_runner import run_process
+from backend.api import create_app
+from backend.profile_assets import photo_path, photo_issues, snapshot_photo
+from backend.session_store import SessionStore
+from backend.tools import LocalTools
+from backend.process_runner import run_process
 from resume_fixtures import full_page_tex
 
 
@@ -51,11 +51,20 @@ class PhotoAPITests(unittest.TestCase):
             self.assertFalse(client.delete('/profile/photo',headers=a).json()['has_photo'])
 
     def test_changed_backend_refuses_new_task(self):
-        with tempfile.TemporaryDirectory() as directory, TestClient(create_app(directory, allow_legacy_users=True)) as client:
-            user=client.post('/users').json();headers={'Authorization':'Bearer '+user['token']}
-            sid=client.post('/sessions',headers=headers).json()['session_id']
-            # A different source tree stands in for code changed since app creation.
-            with patch('api.BASE_DIR',Path(directory)):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            (root/'frontend').mkdir()
+            (root/'frontend/index.html').write_text('test workspace')
+            (root/'backend').mkdir()
+            source=root/'backend/rules.py'
+            source.write_text('REVISION = 1\n')
+            # Only a nested backend file changes; root-level files stay identical.
+            with patch('backend.api.BASE_DIR',root), TestClient(create_app(root/'data', allow_legacy_users=True)) as client:
+                self.assertEqual(client.get('/').text, 'test workspace')
+                self.assertFalse(client.get('/health').json()['restart_required'])
+                user=client.post('/users').json();headers={'Authorization':'Bearer '+user['token']}
+                sid=client.post('/sessions',headers=headers).json()['session_id']
+                source.write_text('REVISION = 2\n')
                 self.assertTrue(client.get('/health').json()['restart_required'])
                 result=client.post(f'/sessions/{sid}/messages',headers=headers,json={'message':'generate'})
                 self.assertEqual(result.status_code,503)

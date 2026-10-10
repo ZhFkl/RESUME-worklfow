@@ -9,9 +9,9 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from process_runner import run_process
-from session_store import SessionStore
-from tools import LocalTools, PreviewResult
+from backend.process_runner import run_process
+from backend.session_store import SessionStore
+from backend.tools import LocalTools, PreviewResult
 
 
 class LocalToolsTests(unittest.IsolatedAsyncioTestCase):
@@ -56,7 +56,7 @@ class LocalToolsTests(unittest.IsolatedAsyncioTestCase):
                 started.set()
                 return process
 
-            with patch('process_runner.asyncio.create_subprocess_exec', side_effect=capture):
+            with patch('backend.process_runner.asyncio.create_subprocess_exec', side_effect=capture):
                 task = asyncio.create_task(run_process(
                     [sys.executable, '-c', 'import time; time.sleep(30)'], timeout=30 if cancel else 0.05))
                 await started.wait()
@@ -89,7 +89,7 @@ class LocalToolsTests(unittest.IsolatedAsyncioTestCase):
 
             async with LocalTools(root, output) as tools:
                 await tools.call('resume__write_file', {'path': 'resume.tex', 'content': 'test'})
-                with patch('tools.run_process', side_effect=slow_compile):
+                with patch('backend.tools.run_process', side_effect=slow_compile):
                     task = asyncio.create_task(tools.call('resume__compile_pdf', {'tex_file': 'resume.tex'}))
                     await started.wait()
                     task.cancel()

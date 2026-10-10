@@ -1,0 +1,33 @@
+/* Readable navigation, account controls and footer copy on pale surfaces. */
+#app-shell .sidebar nav a,
+#app-shell .sidebar-bottom,
+#app-shell .sidebar-bottom small,
+#app-shell .sidebar-bottom .avatar,
+#app-shell .topbar-actions,
+#app-shell .topbar-actions .button,
+#app-shell .topbar-actions .prototype-label,
+#mobile-nav-dialog,
+#mobile-nav-dialog .button,
+#mobile-nav-dialog .mobile-nav-links a,
+#mobile-nav-dialog .mobile-nav-overview,
+#app-shell .template-choice,
+#app-shell .template-choice strong,
+#app-shell .template-choice a,
+#app-shell .composer textarea,
+#app-shell .attach-controls > span,
+#app-shell #attach-button,
+#app-shell .composer-hint,
+#app-shell .task-status:not(.error),
+#app-shell .document-note,
+#app-shell .template-library-note,
+#app-shell .pdf-footer,
+.landing-footer,
+.landing-nav nav > a:not(.primary),
+.landing-nav .landing-login {
+  color: #222222;
+}
+
+#app-shell .composer textarea::placeholder {
+  color: #222222;
+  opacity: 1;
+}

@@ -9,11 +9,11 @@ import unittest
 from unittest.mock import patch
 
 from starlette.datastructures import UploadFile
-from session_store import SessionStore
-from task_manager import TaskManager
-from template_importer import TemplateImporter, apply_edits, source_hash
-from template_library import TemplateLibrary
-from uploaded_files import save_upload
+from backend.session_store import SessionStore
+from backend.task_manager import TaskManager
+from backend.template_importer import TemplateImporter, apply_edits, source_hash
+from backend.template_library import TemplateLibrary
+from backend.uploaded_files import save_upload
 from test_backend import MockClient, Message
 from test_template_library import SAMPLE
 
