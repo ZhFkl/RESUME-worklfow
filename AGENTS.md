@@ -86,48 +86,7 @@ rm -f 文件名.aux 文件名.log 文件名.out  # 编译完成后删除中间�
 - 每次生成/更新简历后，目录中只保留 .tex、.pdf 和编译所需的本任务 `photo.jpg` 副本，编译中间产物一律删除
 - 证件照：后端自动将个人素材中的照片复制为任务目录的 `photo.jpg`，保留历史版本依据；编译验收检查 PDF 是否实际绘制该照片，交付前仍需通过截图检查位置、比例与遮挡。
 
-## 目录结构
 
-```text
-├── backend/                     # Python 后端实现
-│   ├── api.py / account_api.py  # HTTP、账号接口与静态页面
-│   ├── agent.py / agent_core.py # 终端入口与模型循环
-│   ├── tools.py / workspace.py # 模型工具与文件边界
-│   ├── task_manager.py / task_metrics.py # 任务调度与端到端计时
-│   ├── model_stream.py          # 模型正文流式输出与工具调用片段组装
-│   ├── reply_timeline.py        # 公开回复与实际操作顺序持久化
-│   ├── template_guard.py        # 所选模板样式一致性核对
-│   ├── session_store.py / account_store.py # SQLite 与账号存储
-│   ├── account_admin.py / email_gateway.py # 管理员命令与注册验证码邮件
-│   ├── sms_gateway.py / sms_auth.py       # 阿里云号码认证与一次性短信校验
-│   ├── template_library.py / template_importer.py # 模板管理与转换
-│   ├── material_importer.py / uploaded_files.py   # 素材导入与附件解析
-│   ├── process_runner.py / pdf_preview.py        # 子进程与 PDF 截图
-│   ├── resume_editor.py / resume_text.py # 用户正文/源码编辑与编译新版本
-│   ├── resume_review.py / layout_tuning.py       # 内容验收与排版微调
-│   ├── profile_assets.py / tex_edits.py          # 证件照与源码编辑
-│   └── paths.py / __init__.py                   # 项目根路径与包入口
-├── frontend/                    # 首页、登录弹窗、五个工作页面与静态依赖
-├── 模板/                        # 系统模板
-│   ├── resume-中文模板.tex / .pdf
-│   └── resume-en-template.tex / .pdf
-├── docs/                        # 架构、运行说明及模板预览图
-├── deploy/                      # 发布、镜像自检、代理、备份及构建依赖
-├── tests/                       # 后端、工具、隔离与持久化测试
-├── data/                        # 私有用户数据（忽略 Git），位置不变
-│   ├── resume.sqlite3           # 账号、会话、任务及文件记录
-│   └── users/<user_id>/workspace/
-│       ├── 项目经历库.md         # 每位用户唯一事实来源
-│       ├── assets/photo.jpg     # 用户证件照
-│       ├── 模板/ / snapshots/   # 个人模板、任务模板与素材快照
-│       └── resumes/<task_id>/   # 本轮 .tex、.pdf 与 photo.jpg
-├── dist/                        # 部署配置压缩包（忽略 Git）
-├── api.py / agent.py / account_admin.py / task_metrics.py # 原命令兼容入口
-├── requirements.txt / requirements-sms.txt / .env.example
-├── Dockerfile / .dockerignore / compose.yaml / compose.ssh.yaml / compose.ip.yaml / compose.ip-https.yaml / compose.existing-proxy.yaml
-├── README.md / LICENSE
-└── AGENTS.md                    # 本文件，仍为业务 Agent 规则来源
-```
 
 ## 维护约定
 
