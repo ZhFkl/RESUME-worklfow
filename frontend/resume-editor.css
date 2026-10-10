@@ -1,0 +1,44 @@
+#latex-dialog {width:min(1320px,96vw);max-width:96vw;height:90vh;height:90dvh;max-height:94dvh;padding:0;border:1px solid #dce2d9;border-radius:16px;background:#f8f9f5;color:#263e34;overflow:hidden}
+#latex-dialog[open] {display:flex;flex-direction:column}
+.latex-header {display:flex;align-items:center;justify-content:space-between;padding:18px 24px 10px;gap:16px}
+.latex-header h2 {margin:0;font-size:20px}.latex-header p {margin:4px 0 0;font-size:12px;overflow-wrap:anywhere;color:#66776e}
+.latex-header .icon-button {width:40px;height:40px;flex-shrink:0;font-size:24px}
+.latex-actions {display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 24px 16px;border-bottom:1px solid #dce2d9}
+#latex-save-state {font-size:12px;color:#66776e}
+.latex-workspace {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);flex:1;min-height:0;overflow:hidden}
+.latex-source-pane,.latex-preview-pane {display:flex;flex-direction:column;min-width:0;min-height:0}
+.latex-source-pane {border-right:1px solid #dce2d9}
+.latex-mode-switch {display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid #e7ebe4}
+.latex-mode-switch [aria-pressed="true"] {background:#e1e9dc;color:#2f6c53}
+#latex-format-toolbar {display:flex;align-items:center;gap:10px;padding:8px 18px;border-bottom:1px solid #e7ebe4}
+#latex-format-toolbar>span {font-size:12px;color:#66776e}
+#latex-bold {min-height:40px;flex-shrink:0}#latex-bold strong {font:700 18px Georgia,serif}
+#latex-bold[aria-pressed="true"] {background:#2f6c53;color:white;border-color:#2f6c53}
+#latex-text-hint {font-size:12px;line-height:1.6;color:#66776e;padding:10px 18px;margin:0}
+#latex-text-fields {flex:1;min-height:0;overflow:auto;padding:0 18px 24px;background:#fff}
+.resume-text-section {margin:22px 0 10px;font-size:16px;color:#2f6c53}
+.resume-text-field {margin:0 0 14px}.latex-source-pane .resume-text-field label {display:block;border:0;padding:0 0 6px;font-size:12px}
+.resume-text-input {white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid #dce2d9;border-radius:8px;padding:10px 12px;min-height:44px;background:#fafbf8;color:#263e34;font-size:14px;line-height:1.8;font-family:inherit}
+.resume-text-input:focus {outline:2px solid #6d9880;outline-offset:1px;background:white}
+.resume-text-input[contenteditable="false"] {opacity:.65}
+.resume-text-empty {font-size:14px;line-height:1.8;color:#66776e;padding:20px 0}
+.latex-source-pane label,#latex-preview-label {margin:0;padding:12px 18px;font-size:12px;color:#66776e;border-bottom:1px solid #e7ebe4}
+#latex-source {flex:1;min-height:0;width:100%;border:0;border-radius:0;resize:none;padding:18px;background:#fff;color:#263e34;font:14px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;tab-size:2;white-space:pre}
+#latex-source:focus-visible {outline:2px solid #6d9880;outline-offset:-2px}
+.latex-preview-stage {overflow:auto;flex:1;padding:20px;background:#e9ece6;text-align:center}
+#latex-canvas {width:100%;height:auto;max-width:650px;background:white;box-shadow:0 4px 18px #233a3014}
+#latex-preview-status {font-size:13px}
+#latex-result {margin:0;padding:12px 24px;max-height:140px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 ui-monospace,monospace;border-top:1px solid #dce2d9;background:#f8f9f5;flex-shrink:0}
+#latex-result[data-error="true"] {color:#9b3730;background:#fff5f2}
+.latex-tabs {display:none}
+.pdf-toolbar {flex-wrap:wrap;gap:10px}.pdf-toolbar>div {flex-wrap:wrap;gap:6px}
+@media(max-width:700px) {
+ #latex-dialog {width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0}
+ .latex-header {padding:14px 16px 6px}.latex-actions {padding:8px 16px;gap:8px}.latex-actions .button {min-height:40px}
+ .latex-tabs {display:flex;gap:8px;padding:8px 16px}.latex-tabs [aria-pressed="true"] {background:#e1e9dc;color:#2f6c53}
+ .latex-workspace {display:flex}.latex-source-pane,.latex-preview-pane {width:100%;border:0}
+ .latex-workspace[data-view="source"] .latex-preview-pane,.latex-workspace[data-view="preview"] .latex-source-pane {display:none}
+ #latex-source {font-size:16px;padding:12px}.latex-preview-stage {padding:12px}#latex-result {padding:10px 16px;max-height:105px}
+ .latex-mode-switch {padding:8px 16px}.latex-mode-switch .button {min-height:40px}
+ #latex-text-fields {padding:0 16px 20px}.resume-text-input {font-size:16px}#latex-text-hint {padding:8px 16px}
+}

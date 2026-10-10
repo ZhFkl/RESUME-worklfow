@@ -5,9 +5,9 @@ import tempfile
 from types import SimpleNamespace
 import unittest
 
-from session_store import SessionStore
-from task_manager import TaskManager
-from task_metrics import measured, model_request, span, summary, tracing
+from backend.session_store import SessionStore
+from backend.task_manager import TaskManager
+from backend.task_metrics import measured, model_request, span, summary, tracing
 
 
 class MetricsTests(unittest.IsolatedAsyncioTestCase):

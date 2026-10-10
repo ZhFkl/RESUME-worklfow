@@ -1,0 +1,38 @@
+# Use an existing host reverse proxy; only expose the app on loopback.
+# No Caddy container and no claim on the host 80/443 ports.
+name: resume
+
+services:
+  app:
+    image: ${RESUME_IMAGE:?Set RESUME_IMAGE to the loaded image tag}
+    pull_policy: never
+    env_file:
+      - path: ${RESUME_APP_ENV_FILE:-./deploy/app.env}
+        format: raw
+    environment:
+      RESUME_DATA_DIR: /data
+      RESUME_PUBLIC_ORIGIN: ${RESUME_PUBLIC_ORIGIN:?Set RESUME_PUBLIC_ORIGIN to the browser URL}
+      RESUME_COOKIE_SECURE: ${RESUME_COOKIE_SECURE:-true}
+    command: ["python", "-m", "uvicorn", "backend.api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*", "--no-access-log"]
+    ports: ["127.0.0.1:${RESUME_BIND_PORT:-18766}:8000"]
+    user: "10001:10001"
+    init: true
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    cpus: ${RESUME_APP_CPUS:-1}
+    mem_limit: ${RESUME_APP_MEMORY:-1g}
+    pids_limit: 256
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    volumes:
+      - type: bind
+        source: ${RESUME_DATA_PATH:?Set RESUME_DATA_PATH to the persistent server directory}
+        target: /data
+        bind:
+          create_host_path: false
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}

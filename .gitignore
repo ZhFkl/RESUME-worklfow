@@ -14,3 +14,17 @@ __pycache__/
 data/
 history.json
 我的项目经历.md
+
+# Deployment secrets and local build exports
+/deploy/app.env
+/deploy/deployment.env
+/deploy/backups/
+/dist/
+
+/deploy/ssh.env
+
+/deploy/ip.env
+
+/deploy/ip-https.env
+
+/deploy/existing-proxy.env

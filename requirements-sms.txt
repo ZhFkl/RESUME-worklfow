@@ -1,2 +1,2 @@
-# 可选：阿里云短信发送 SDK；基础依赖仍安装 requirements.txt
-alibabacloud_dysmsapi20170525==4.6.0
+# 阿里云号码认证 SDK（SendSmsVerifyCode / CheckSmsVerifyCode）
+alibabacloud_dypnsapi20170525==2.0.0

@@ -1,0 +1,20 @@
+.template-category-bar { display: flex; align-items: center; gap: 18px; padding: 0 0 22px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
+.template-category-label { flex-shrink: 0; color: #718166; font-size: 12px; }
+.template-categories { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.template-categories button { flex-shrink: 0; border: 1px solid #dce5d6; border-radius: 24px; padding: 9px 18px; min-height: 40px; background: #fff; color: #62745e; font-size: 13px; white-space: nowrap; }
+.template-categories button:hover { background: #eef3e9; }
+.template-categories button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.template-category-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.template-category-tag { font-size: 11px; line-height: 1.5; padding: 3px 8px; color: #64765e; background: #f0f4eb; border-radius: 5px; }
+.template-empty { grid-column: 1 / -1; padding: 44px 20px; text-align: center; background: #f1f5ed; border: 1px dashed #d4dfcc; border-radius: 12px; }
+.template-empty h3 { margin: 0 0 10px; font-size: 17px; font-weight: 500; }
+.template-empty p { margin: 0 0 20px; font-size: 13px; line-height: 1.8; color: #6f7f65; }
+.template-empty .button { min-height: 40px; }
+@media (max-width: 600px) {
+  .template-category-bar { display: block; padding-bottom: 16px; margin-bottom: 16px; }
+  .template-category-label { display: block; margin-bottom: 10px; }
+  .template-categories { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; padding: 4px 3px 10px; scrollbar-width: thin; }
+  .template-categories button { min-height: 44px; padding: 10px 16px; }
+  .template-filters .button { min-height: 44px; }
+  .template-empty { padding: 32px 16px; }
+}

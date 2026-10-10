@@ -8,11 +8,11 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from starlette.testclient import TestClient
-from api import create_app
-from agent_core import AgentError
-from material_importer import MaterialImporter, merge_additions, normalize_documents, validate_result
-from session_store import Busy, SessionStore
-from task_manager import TaskManager
+from backend.api import create_app
+from backend.agent_core import AgentError
+from backend.material_importer import MaterialImporter, merge_additions, normalize_documents, validate_result
+from backend.session_store import Busy, SessionStore
+from backend.task_manager import TaskManager
 
 
 class ExtractClient:

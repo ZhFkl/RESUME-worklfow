@@ -11,9 +11,9 @@ from unittest.mock import patch
 from PIL import Image
 from docx import Document
 from starlette.testclient import TestClient
-from agent_core import AgentCore
-from api import create_app
-from uploaded_files import prepare_file
+from backend.agent_core import AgentCore
+from backend.api import create_app
+from backend.uploaded_files import prepare_file
 from test_backend import Message, MockClient
 
 

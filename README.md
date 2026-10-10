@@ -19,7 +19,7 @@
 - [架构设计](docs/架构设计.md)：模块职责、运行位置、用户存储与接口。
 - [本地运行](docs/本地运行.md)：依赖、配置、终端与 API 启动、请求示例和测试。
 
-已提供登录页及素材文档、模板库、简历版本、对话工作台、账号管理五个页面。模板库支持系统模板和上传 PDF/图片转换的个人 LaTeX 模板，预览后选择用于后续生成。PDF / DOCX 提取文本后自动调用已配置模型整理到用户素材库，聊天和 PDF 预览下载均连接后端。用 `.venv/bin/python -m uvicorn api:app --host 127.0.0.1 --port 8765` 启动后访问 <http://127.0.0.1:8765>，详见 [网页使用说明](prototype/README.md)。支持开放注册、密码登录、管理员管理及旧资料绑定；手机号注册/登录/找回需配置短信服务，详见[本地运行](docs/本地运行.md)。下面原有工作流介绍的是直接使用 AI 编程助手操作仓库的方式。
+已提供公开首页，以及素材文档、模板库、简历版本、对话工作台、账号管理五个页面。访客可以先浏览首页、工作台和系统模板，发送、上传或编辑时才弹出登录窗口，登录前输入的消息会保留。模板库支持系统模板和上传 PDF/图片转换的个人 LaTeX 模板，预览后选择用于后续生成。PDF / DOCX 提取文本后自动调用已配置模型整理到用户素材库，聊天和 PDF 预览下载均连接后端。用 `.venv/bin/python -m uvicorn backend.api:app --host 127.0.0.1 --port 8765` 启动后访问 <http://127.0.0.1:8765>，详见 [网页使用说明](frontend/README.md)。支持开放注册、密码登录、管理员管理及旧资料绑定；登录窗提供手机登录、邮箱登录、注册账号三个入口，登录窗提供手机、邮箱、注册三个入口，注册可设置用户名并验证手机或邮箱。默认手机验证码登录，首次验证通过自动创建账号；旧账号可在 `/password-login.html` 使用用户名或邮箱加密码登录并绑定手机号，忘记密码由管理员协助重置，详见[本地运行](docs/本地运行.md)。下面原有工作流介绍的是直接使用 AI 编程助手操作仓库的方式。
 
 ## 怎么用（就三步）
 
@@ -105,17 +105,23 @@ AI 会自动完成：分析 JD 要求 → 从素材库挑选最匹配的项目�
 
 ## 里面装了什么
 
-```
-├── AGENTS.md              # 规则层：AI 的操作手册（不许编造、必须一页、怎么编译）
-├── 项目经历库.md           # 数据层：素材总库（示例人物，整体替换成你的）
-├── 模板/                   # 渲染层：排版模板（随时丢入新模板，AI 转成 LaTeX）
-│   ├── resume-中文模板.tex / .pdf
-│   └── resume-en-template.tex / .pdf
-├── docs/images/           # 模板预览图
-└── LICENSE                # MIT
+```text
+├── backend/               # Python 后端：Agent、工具、账号、任务与存储
+├── frontend/              # HTML、CSS、JavaScript 与网页静态资源
+├── 模板/                  # 中英文系统 LaTeX 模板和 PDF 预览
+├── docs/                  # 架构、运行说明与预览图
+├── deploy/                # 镜像发布、验证、代理与备份工具
+├── tests/                 # 自动化测试
+├── data/                  # SQLite、个人素材、照片、模板及生成简历（私有）
+├── dist/                  # 本地生成的服务器部署配置包
+├── api.py / agent.py / account_admin.py / task_metrics.py # 原命令兼容入口
+├── Dockerfile / compose.yaml / compose.ssh.yaml / compose.ip.yaml / compose.ip-https.yaml / compose.existing-proxy.yaml / .dockerignore
+├── requirements.txt / requirements-sms.txt / .env.example
+├── AGENTS.md              # Agent 工作规则与系统提示词来源
+└── README.md / LICENSE
 ```
 
-一个手册，一个素材库，两套模板。
+网页及终端用户的素材库位于 `data/users/<user_id>/workspace/项目经历库.md`；根目录不存放共用的个人经历。`.env`、`.venv/`、`data/` 和 `dist/` 均保留在本机，不提交 Git。旧启动命令继续可用，新代码统一从 `backend` 包导入。完整目录职责见[架构设计](docs/架构设计.md)。
 
 ---
 
@@ -148,3 +154,6 @@ AI 会自动完成：分析 JD 要求 → 从素材库挑选最匹配的项目�
 MIT License
 
 Copyright (c) 2026 Zhihan Li
+
+
+服务器采用本地构建镜像、测试后发布、服务器拉取运行的方式。SQLite 和用户文件独立保存在服务器持久目录，不打入镜像，更新时复用原目录。入口为 `deploy/release.sh` 和 `compose.yaml`，迁移、备份、升级步骤见[本地运行文档](docs/本地运行.md#镜像构建与服务器部署)。当前容器打包尚不包含每次编译的独立沙箱，公开处理任意用户模板前仍需补齐该隔离。

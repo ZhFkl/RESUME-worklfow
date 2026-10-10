@@ -11,13 +11,13 @@ from unittest.mock import patch
 
 from starlette.testclient import TestClient
 from starlette.datastructures import UploadFile
-from api import create_app
-from session_store import SessionStore, NotFound
-from template_library import TemplateLibrary
-from template_importer import TemplateImporter
-from agent_core import AgentCore
-from task_manager import TaskManager
-from uploaded_files import save_upload
+from backend.api import create_app
+from backend.session_store import SessionStore, NotFound
+from backend.template_library import TemplateLibrary
+from backend.template_importer import TemplateImporter
+from backend.agent_core import AgentCore
+from backend.task_manager import TaskManager
+from backend.uploaded_files import save_upload
 from test_backend import MockClient, Message
 
 SAMPLE = r'\documentclass{article}\usepackage[a4paper,margin=12mm]{geometry}\pagestyle{empty}\begin{document}Sample Name\section*{Education}Sample University\section*{Experience}Describe a contribution.\end{document}'
@@ -60,6 +60,7 @@ class TemplateAPITests(unittest.TestCase):
                 self.assertEqual(client.get('/templates').status_code,401)
                 catalog=client.get('/templates',headers=ha).json()
                 self.assertEqual(len(catalog['templates']),2)
+                self.assertTrue(all(item['categories']==['engineering'] for item in catalog['templates']))
                 before=client.get('/materials',headers=ha).json()
                 binary=Path('模板/resume-en-template.pdf').read_bytes()
                 def upload():
@@ -80,6 +81,8 @@ class TemplateAPITests(unittest.TestCase):
                 self.assertEqual(client.get(f'/templates/{ident}/files/pdf',headers=hb).status_code,404)
                 self.assertEqual(client.put('/templates/selection',headers=hb,json={'template_id':ident}).status_code,404)
                 self.assertEqual(client.put('/templates/selection',headers=ha,json={'template_id':ident}).status_code,200)
+                personal=next(item for item in client.get('/templates',headers=ha).json()['templates'] if item['id']==ident)
+                self.assertEqual(personal['categories'],[])
                 self.assertEqual(client.get('/templates',headers=ha).json()['selected_id'],ident)
                 self.assertEqual(len(client.get('/templates',headers=hb).json()['templates']),2)
                 ConversionClient.fail=True
@@ -160,7 +163,22 @@ class TemplateSelectionTests(unittest.IsolatedAsyncioTestCase):
             store=SessionStore(directory);uid=store.create_user()['user_id']
             root=Path(catalog);(root/'模板').mkdir();(root/'模板/new.tex').write_text(SAMPLE)
             (root/'模板/new.json').write_text(json.dumps({'name':'New template','description':'New style'}))
-            with patch('template_library.BASE_DIR',root):
+            with patch('backend.template_library.BASE_DIR',root):
                 data=TemplateLibrary(store).catalog(uid)
                 self.assertEqual(data['templates'][0]['name'],'New template')
                 self.assertIsNone(data['templates'][0]['pdf_url'])
+                self.assertEqual(data['templates'][0]['categories'],[])
+
+    def test_system_template_role_metadata(self):
+        with tempfile.TemporaryDirectory() as directory, tempfile.TemporaryDirectory() as catalog:
+            store=SessionStore(directory);uid=store.create_user()['user_id']
+            root=Path(catalog);(root/'模板').mkdir();(root/'模板/new.tex').write_text(SAMPLE)
+            meta=root/'模板/new.json'
+            with patch('backend.template_library.BASE_DIR',root):
+                for raw,expected in [(['design','product','design','invalid'],['product','design']),
+                                     ('engineering',[]),(None,[]),([{},42],[]),([],[])]:
+                    meta.write_text(json.dumps({'name':'Specialist','categories':raw}))
+                    with self.subTest(categories=raw):
+                        result=TemplateLibrary(store).catalog(uid)['templates'][0]
+                        self.assertEqual(result['categories'],expected)
+                        self.assertNotIn('path',result)

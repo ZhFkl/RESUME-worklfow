@@ -2,9 +2,9 @@ import json
 import tempfile
 import unittest
 
-from session_store import SessionStore
-from tex_edits import source_hash
-from tools import LocalTools
+from backend.session_store import SessionStore
+from backend.tex_edits import source_hash
+from backend.tools import LocalTools
 from resume_fixtures import full_page_tex
 from test_backend import Message, MockClient
 from test_pdf_preview import actions, response

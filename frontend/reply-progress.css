@@ -1,0 +1,40 @@
+.reply-progress {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  min-height: 26px;
+  margin: 0 0 12px;
+  color: #222222;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.reply-progress-dots { display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0; }
+.reply-progress-dots i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: reply-pulse 1.4s ease-in-out infinite;
+}
+.reply-progress-dots i:nth-child(2) { animation-delay: .16s; }
+.reply-progress-dots i:nth-child(3) { animation-delay: .32s; }
+.reply-progress.error { color: #89432e; }
+.reply-progress .reply-retry { min-height: 36px; color: #222222; }
+.reply-failed .message-body { opacity: .75; }
+@keyframes reply-pulse { 0%, 70%, 100% { opacity: .35; } 35% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .reply-progress-dots i { animation: none; } }
+
+.message.assistant .message-body.formatted { white-space: normal; color: #222222; }
+.message-body.formatted > :first-child { margin-top: 0; }
+.message-body.formatted > :last-child { margin-bottom: 0; }
+.message-body.formatted p { margin: 0 0 12px; }
+.message-body.formatted :is(h1,h2,h3,h4,h5,h6) { font-size: 1.1em; margin: 18px 0 8px; }
+.message-body.formatted :is(ul,ol) { padding-left: 1.6em; margin: 8px 0 14px; }
+.message-body.formatted li { margin: 4px 0; }
+.message-body.formatted pre { padding: 12px; overflow: auto; background: #eef1eb; border-radius: 8px; }
+.message-body.formatted code { font-family: ui-monospace, monospace; }
+.message-body.formatted blockquote { margin: 12px 0; padding-left: 12px; border-left: 3px solid #c8d4c5; }
+.message-body.formatted a { text-decoration: underline; text-underline-offset: 3px; }
+.message-body.formatted table { display: block; max-width: 100%; overflow: auto; border-collapse: collapse; }
+.message-body.formatted :is(th,td) { padding: 6px 10px; border: 1px solid #dfe5dc; }

@@ -1,0 +1,18 @@
+{
+    # IP URL clients omit SNI; select this public IP certificate behind Docker NAT.
+    default_sni {$RESUME_PUBLIC_IP}
+}
+
+{$RESUME_PUBLIC_IP} {
+    tls {
+        issuer acme {
+            dir https://acme-v02.api.letsencrypt.org/directory
+            profile shortlived
+        }
+    }
+    encode zstd gzip
+    request_body {
+        max_size 50MB
+    }
+    reverse_proxy app:8000
+}
